@@ -1,3 +1,6 @@
+use std::error;
+use std::fmt;
+
 type Point = geo::Coordinate<f64>;
 
 /// This enumeration contains error cases for edges manipulation.
@@ -5,6 +8,20 @@ type Point = geo::Coordinate<f64>;
 pub enum EdgeError {
     /// This error can be produced if normals of an edge of null length are computed.
     VerticesOverlap,
+}
+
+impl error::Error for EdgeError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
+
+impl fmt::Display for EdgeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::VerticesOverlap => write!(f, "Vertices overlap"),
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]

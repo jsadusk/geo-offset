@@ -1,12 +1,33 @@
 use super::*;
 use geo_booleanop::boolean::BooleanOp;
 
+use std::error;
+use std::fmt;
+
 /// If offset computing fails this error is returned.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum OffsetError {
     /// This error can be produced when manipulating edges.
     EdgeError(EdgeError),
     UnknownGeometry,
+}
+
+impl error::Error for OffsetError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Self::EdgeError(e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+impl fmt::Display for OffsetError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::EdgeError(e) => write!(f, "Edge error: {}", e),
+            Self::UnknownGeometry => write!(f, "Unknown geometry"),
+        }
+    }
 }
 
 /// Arcs around corners are made of 5 segments by default.
