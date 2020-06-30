@@ -1,11 +1,12 @@
 use super::*;
-use geo_clipper::Clipper;
+use geo_booleanop::boolean::BooleanOp;
 
 /// If offset computing fails this error is returned.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum OffsetError {
     /// This error can be produced when manipulating edges.
     EdgeError(EdgeError),
+    UnknownGeometry,
 }
 
 /// Arcs around corners are made of 5 segments by default.
@@ -33,7 +34,7 @@ impl Offset for geo::GeometryCollection<f64> {
         for geometry in self.0.iter() {
             let geometry_with_offset = geometry.offset_with_arc_segments(distance, arc_segments)?;
             geometry_collection_with_offset =
-                geometry_collection_with_offset.union(&geometry_with_offset, 1000.0);
+                geometry_collection_with_offset.union(&geometry_with_offset);
         }
         Ok(geometry_collection_with_offset)
     }
@@ -66,6 +67,7 @@ impl Offset for geo::Geometry<f64> {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 geometry_collection.offset_with_arc_segments(distance, arc_segments)
             }
+            _ => Err(OffsetError::UnknownGeometry),
         }
     }
 }
@@ -79,7 +81,7 @@ impl Offset for geo::MultiPolygon<f64> {
         let mut polygons = geo::MultiPolygon(Vec::new());
         for polygon in self.0.iter() {
             let polygon_with_offset = polygon.offset_with_arc_segments(distance, arc_segments)?;
-            polygons = polygons.union(&polygon_with_offset, 1000.0);
+            polygons = polygons.union(&polygon_with_offset);
         }
         Ok(polygons)
     }
@@ -98,11 +100,11 @@ impl Offset for geo::Polygon<f64> {
             .offset_with_arc_segments(distance.abs(), arc_segments)?;
 
         Ok(if distance.is_sign_positive() {
-            self.union(&exterior_with_offset, 1000.0)
-                .union(&interiors_with_offset, 1000.0)
+            self.union(&exterior_with_offset)
+                .union(&interiors_with_offset)
         } else {
-            self.difference(&exterior_with_offset, 1000.0)
-                .difference(&interiors_with_offset, 1000.0)
+            self.difference(&exterior_with_offset)
+                .difference(&interiors_with_offset)
         })
     }
 }
@@ -122,7 +124,7 @@ impl Offset for geo::MultiLineString<f64> {
             let line_string_with_offset =
                 line_string.offset_with_arc_segments(distance, arc_segments)?;
             multi_line_string_with_offset =
-                multi_line_string_with_offset.union(&line_string_with_offset, 1000.0);
+                multi_line_string_with_offset.union(&line_string_with_offset);
         }
         Ok(multi_line_string_with_offset)
     }
@@ -141,7 +143,7 @@ impl Offset for geo::LineString<f64> {
         let mut line_string_with_offset = geo::MultiPolygon(Vec::new());
         for line in self.lines() {
             let line_with_offset = line.offset_with_arc_segments(distance, arc_segments)?;
-            line_string_with_offset = line_string_with_offset.union(&line_with_offset, 1000.0);
+            line_string_with_offset = line_string_with_offset.union(&line_with_offset);
         }
 
         let line_string_with_offset = line_string_with_offset.0.iter().skip(1).fold(
@@ -152,7 +154,7 @@ impl Offset for geo::LineString<f64> {
                     .map(|polygon| vec![polygon.clone()])
                     .unwrap_or_default(),
             ),
-            |result, hole| result.difference(hole, 1000.0),
+            |result, hole| result.difference(hole),
         );
 
         Ok(line_string_with_offset)
@@ -219,7 +221,7 @@ impl Offset for geo::MultiPoint<f64> {
         let mut multi_point_with_offset = geo::MultiPolygon(Vec::new());
         for point in self.0.iter() {
             let point_with_offset = point.offset_with_arc_segments(distance, arc_segments)?;
-            multi_point_with_offset = multi_point_with_offset.union(&point_with_offset, 1000.0);
+            multi_point_with_offset = multi_point_with_offset.union(&point_with_offset);
         }
         Ok(multi_point_with_offset)
     }

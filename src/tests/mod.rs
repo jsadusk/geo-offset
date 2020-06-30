@@ -77,7 +77,7 @@ fn test_point_offset() {
         Vec::new(),
     )]);
 
-    println!("{}", result.to_svg().and(point.to_svg()).with_margin(10.0));
+    //println!("{}", result.to_svg().and(point.to_svg()).with_margin(10.0));
     assert_eq!(expected, result);
 }
 
@@ -88,10 +88,10 @@ fn test_segment_offset() {
     let segment = geo::Line::new(p1, p2);
     let result = segment.offset(5.0).unwrap();
 
-    println!(
-        "{}",
-        result.to_svg().and(segment.to_svg()).with_margin(10.0)
-    );
+    //println!(
+    //        "{}",
+    //      result.to_svg().and(segment.to_svg()).with_margin(10.0)
+    //);
 }
 
 #[test]
@@ -105,10 +105,10 @@ fn test_polygon_offset() {
     ];
     let result = polygon.offset(5.0).unwrap();
 
-    println!(
-        "{}",
-        result.to_svg().and(polygon.to_svg()).with_margin(10.0)
-    );
+    //println!(
+    //  "{}",
+    //result.to_svg().and(polygon.to_svg()).with_margin(10.0)
+    //    );
 }
 
 #[test]
@@ -129,21 +129,21 @@ fn test_polygon_with_hole_offset() {
 
     let result = polygon.offset(1.0).unwrap();
 
-    println!("{}", result.to_svg().and(polygon.to_svg()).with_margin(5.0));
+    //  println!("{}", result.to_svg().and(polygon.to_svg()).with_margin(5.0));
 }
 
 #[test]
 fn test_demo_offset() {
     let result = fixtures::DEMO.offset_with_arc_segments(0.0001, 5).unwrap();
 
-    println!(
+    /*println!(
         "{}",
         result
             .clone()
             .to_svg()
             .and(fixtures::DEMO.to_svg())
             .with_margin(0.001)
-    );
+    );*/
 
     // assert_eq!(*fixtures::DEMO_WITH_OFFSET, geo::GeometryCollection::from(fixtures::FeatureCollection::from(result)));
 }
